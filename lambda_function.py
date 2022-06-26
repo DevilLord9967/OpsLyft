@@ -7,10 +7,12 @@ from typing import List
 
 import boto3
 
-
-EMAIL_ID = os.environ['EMAIL_ID']
-EMAIL_PASSWORD = os.environ['EMAIL_PASSWORD']
+EMAIL_ID = os.environ["EMAIL_ID"]
+EMAIL_PASSWORD = os.environ["EMAIL_PASSWORD"]
+SMTP_HOST = os.environ["SMTP_HOST"]
+SMTP_PORT = os.environ["SMTP_PORT"]
 DEFAULT_MAIL = "deepaksinghal9967@gmail.com"
+
 
 def send_mail(
     subject: str,
@@ -41,15 +43,13 @@ def send_mail(
     composed = outer.as_string()
 
     # Send the email
-    with smtplib.SMTP("smtp.office365.com", 587) as s:
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as s:
         s.ehlo()
         s.starttls()
         s.ehlo()
         s.login(sender, gmail_password)
         s.sendmail(sender, recipients, composed)
         s.close()
-
-
 
 
 class EC2(object):
@@ -88,6 +88,8 @@ class EC2(object):
                 mail_body = """
                 The instance created having ID: {} is not following the given criteria, please the find the list of missing tags below:
                 {}
+
+                If not tagged within next 6 hours, instance will be stopped.
                 """.format(
                     instance.id, "                 >".join(invalid_tags)
                 )
@@ -105,7 +107,7 @@ class EC2(object):
                 )
             if mail_sent:
                 print((datetime.now() - mail_send_time))
-            if mail_sent and (datetime.now() - mail_send_time) >= timedelta(minutes=2):
+            if mail_sent and (datetime.now() - mail_send_time) >= timedelta(hours=6):
                 mail_body = """
                 The instance created having ID: {}, due to not following the give criteria is stopped.
                 """.format(
@@ -127,4 +129,5 @@ class EC2(object):
 def lambda_handler(event, context):
     ec2 = EC2(region="ap-south-1", mandatory_tags=["Environment", "Name"])
     ec2.check_valid_instances()
-    ec2.stop_invalid_instances()
+    if ec2.instancesids_to_stop != []:
+        ec2.stop_invalid_instances()
