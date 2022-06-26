@@ -1,3 +1,4 @@
+import os
 import smtplib
 from datetime import datetime, timedelta
 from email.mime.multipart import MIMEMultipart
@@ -6,9 +7,10 @@ from typing import List
 
 import boto3
 
-EMAIL_ID = "ops.eregistry@dvara.com"
-EMAIL_PASSWORD = "Welcome@2021"
 
+EMAIL_ID = os.environ['EMAIL_ID']
+EMAIL_PASSWORD = os.environ['EMAIL_PASSWORD']
+DEFAULT_MAIL = "deepaksinghal9967@gmail.com"
 
 def send_mail(
     subject: str,
@@ -48,7 +50,6 @@ def send_mail(
         s.close()
 
 
-DEFAULT_MAIL = "deepaksinghal9967@gmail.com"
 
 
 class EC2(object):
@@ -127,7 +128,3 @@ def lambda_handler(event, context):
     ec2 = EC2(region="ap-south-1", mandatory_tags=["Environment", "Name"])
     ec2.check_valid_instances()
     ec2.stop_invalid_instances()
-
-
-if __name__ == "__main__":
-    lambda_handler(None, None)
