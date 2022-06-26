@@ -105,8 +105,8 @@ class EC2(object):
                 instance.create_tags(
                     Tags=[{"Key": "sent_mail", "Value": str(datetime.now())[:-7]}]
                 )
-            if mail_sent:
-                print((datetime.now() - mail_send_time))
+            # if mail_sent:
+            #     print((datetime.now() - mail_send_time))
             if mail_sent and (datetime.now() - mail_send_time) >= timedelta(hours=6):
                 mail_body = """
                 The instance created having ID: {}, due to not following the give criteria is stopped.
